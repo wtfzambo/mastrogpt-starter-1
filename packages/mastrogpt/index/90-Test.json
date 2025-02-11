@@ -6,6 +6,9 @@
    {
     "name": "Demo",
     "url": "mastrogpt/demo"
+   },
+   {
+    "name": "Reverse",
+    "url": "zambo/reverse"
    }
-
 ]
