@@ -55,7 +55,6 @@ def puzzle(args):
   res = {}
 
   print(f"{inp=}")
-  # inp={'form': {'bishop': '', 'knight': '', 'queen': 'true', 'rook': 'true'}}"
 
   if inp == "puzzle":
     res["form"] = FORM
