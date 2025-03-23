@@ -19,7 +19,7 @@ html: true
 
 ## Lesson 5
 
-## Vision and Storage 
+## Vision and Storage
 
 
 ---
@@ -166,7 +166,7 @@ res['html'] = f'<img src="data:image/png;base64,{img}">'
 
 **WARNING!** confusing topic, there are **three** S3 end points!
 
-- Internal DEPLOYMENT endpoint `http`, `S3_HOST` and `S3_PORT` 
+- Internal DEPLOYMENT endpoint `http`, `S3_HOST` and `S3_PORT`
   - provided by the login
 - Internal TEST endpoint: `http`, `S3_HOST` and `S3_PORT` in test
   - configured in `tests/.env`
@@ -201,7 +201,7 @@ import os, boto3, base64, pathlib
 key = args.get("S3_ACCESS_KEY", os.getenv("S3_ACCESS_KEY"))
 sec = args.get("S3_SECRET_KEY", os.getenv("S3_SECRET_KEY"))
 client = boto3.client('s3',
-   endpoint_url=url,  region_name='us-east-1', 
+   endpoint_url=url,  region_name='us-east-1',
    aws_access_key_id=key, aws_secret_access_key=sec)
 ```
 
@@ -234,9 +234,8 @@ res['Contents']
 
 ### delete:
 
-```
-### delete:
 ```python
+### delete:
 client.delete_object(Bucket=bucket, Key='cat.jpg')
 ```
 
@@ -260,10 +259,10 @@ url = client.generate_presigned_url('get_object',
 
 - Fixing the url for external access:
 ```python
-external_url = "https://openserverless.dev" 
+external_url = "https://openserverless.dev"
 from urllib.parse import urlparse, urlunparse
 old = urlparse(url) ; pref = urlparse(external_url)
-url = urlunparse((pref.scheme, pref.netloc, 
+url = urlunparse((pref.scheme, pref.netloc,
                   old.path, old.params, old.query, old.fragment))
 ```
 
@@ -285,7 +284,7 @@ url = urlunparse((pref.scheme, pref.netloc,
 
 ---
 
-# Exercise: 
+# Exercise:
 
 Modify the `vision/form` to store the uploaded files on S3
 
@@ -293,6 +292,6 @@ Hints:
 - add the `bucket.py` module to the form
 - save the file after decoding it in base64
 - generate an unique name using the timestamp
-- change the htmo to use the value returned by `exturl` 
+- change the htmo to use the value returned by `exturl`
 
 
