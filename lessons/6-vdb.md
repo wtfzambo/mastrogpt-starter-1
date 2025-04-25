@@ -82,7 +82,7 @@ client.drop_collection("test")
 
 ```python
 from pymilvus import DataType
-COLLECTION = "test" 
+COLLECTION = "test"
 DIMENSION=1024
 ````
 
@@ -109,7 +109,7 @@ index_params.add_index("embeddings", index_type="AUTOINDEX", metric_type="IP")
 
 ```python
 client.create_collection(
-     collection_name=COLLECTION, 
+     collection_name=COLLECTION,
      schema=schema, index_params=index_params)
 ```
 
@@ -225,7 +225,7 @@ Looking at code
 
 ```
 !code packages/vdb/load/vdb.py
-!code packages/vdb/load/load.py 
+!code packages/vdb/load/load.py
 ```
 
 ---
@@ -276,6 +276,5 @@ Hints:
 - process `input` starting with `https://`
 - use `requests` to read the url content
 - use `BeautifulSoap (bs4)` to process the content and extract text
-- Tokenize text with regular expressions: 
+- Tokenize text with regular expressions:
 https://stackoverflow.com/questions/75253187/tokenizing-the-text-without-the-use-of-libraries
-    
