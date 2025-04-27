@@ -1,4 +1,3 @@
-import json
 import re
 
 import requests as req
@@ -13,35 +12,38 @@ Start with http:// or https:// to load text from a webpage.
 """
 
 
-def tokenize(text: str):
-    tokens = text.split()
+def sent_tokenize(text: str):
+    MAX_BYTES = 1000  # Safety margin below 1024 bytes
 
-    i = 0
-    while i < len(tokens):
-        token = tokens[i]
+    # First split into sentences using the regex
+    sentences = re.split(r"(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|!)\s", text)
+    result = []
 
-        if re.match(r"\d{1,2}[/-]\d{1,2}[/-]\d{4}", token):
-            pass
+    for sentence in sentences:
+        sentence = sentence.strip()
+        if not sentence:
+            continue
 
-        elif re.match(r"\w+'s", token):
-            token = re.sub(r"(\w+)'s", r"\1 's", token)
+        # Convert to bytes to check the actual size
+        sentence_bytes = sentence.encode("utf-8")
 
-        elif re.match(r"\w+'\w+", token):
-            token = token.replace("'", "")
-
-        elif re.match(r"\w+-\w+", token):
-            pass
-
-        elif re.match(r"\d+(,\d+)*", token):
-            pass
-
+        if len(sentence_bytes) <= MAX_BYTES:
+            result.append(sentence)
         else:
-            token = re.sub(r"([^\w\s]+)", r" \1 ", token)
+            # If sentence is too long, split it up
+            current = ""
+            for word in sentence.split():
+                test = (current + " " + word).strip()
+                if len(test.encode("utf-8")) <= MAX_BYTES:
+                    current = test
+                else:
+                    if current:
+                        result.append(current)
+                    current = word
+            if current:
+                result.append(current)
 
-        tokens[i] = token
-        i += 1
-
-    return tokens
+    return result
 
 
 def load(args):
@@ -73,8 +75,11 @@ def load(args):
             soup = BeautifulSoup(page.text, "html.parser")
             text_content = soup.get_text(" ", strip=True)
             if text_content:
-                tokens = tokenize(text_content)
-                out = json.dumps(tokens)
+                sentences = sent_tokenize(text_content)
+                for s in sentences:
+                    res = db.insert(s)
+                    out = "Inserted "
+                    out += " ".join([str(x) for x in res.get("ids", [])])
             else:
                 out = "No readable text content found on the page"
         except req.RequestException as e:
