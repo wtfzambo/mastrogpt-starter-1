@@ -15,5 +15,5 @@ def llm(args):
     msg = { "model": MODEL, "prompt": inp, "stream": False }
     res = req.post(url, json=msg).json()
     out = res.get("response", "error")
-  
+
   return { "output": out }

@@ -1,4 +1,7 @@
-import os, json, requests as req
+import json
+import os
+
+import requests as req
 
 MODEL = "llama3.2-vision:11b"
 
