@@ -1,4 +1,5 @@
 import os
+from typing import Any
 
 import requests as req
 from pymilvus import DataType, MilvusClient
@@ -43,6 +44,9 @@ class VectorDB:
                 datatype=DataType.FLOAT_VECTOR,
                 dim=DIMENSION_EMBEDDING,
             )
+            schema.add_field(
+                field_name="metadata", datatype=DataType.JSON, nullable=True
+            )
 
             index_params = self.client.prepare_index_params()
             index_params.add_index(
@@ -62,9 +66,11 @@ class VectorDB:
         res = req.post(self.url, json=msg).json()
         return res.get("embedding", [])
 
-    def insert(self, text):
+    def insert(self, text: str, metadata: dict[str, Any] | None = None):
         vec = self.embed(text)
-        return self.client.insert(self.collection, {"text": text, "embeddings": vec})
+        return self.client.insert(
+            self.collection, {"text": text, "embeddings": vec, "metadata": metadata}
+        )
 
     def count(self):
         MAX = "1000"
@@ -83,7 +89,7 @@ class VectorDB:
             search_params={"metric_type": "IP"},
             anns_field="embeddings",
             data=[vec],
-            output_fields=["text"],
+            output_fields=["text", "metadata"],
             limit=limit,
         )
         res = []
@@ -91,7 +97,8 @@ class VectorDB:
             for item in cur[0]:
                 dist = item.get("distance", 0)
                 text = item.get("entity", {}).get("text", "")
-                res.append((dist, text))
+                meta = item.get("entity", {}).get("metadata", "")
+                res.append((dist, text, meta))
         return res
 
     def remove_by_substring(self, inp):

@@ -14,17 +14,12 @@ Use `#<limit>`  to change the limit of searches.
 Use `!<substr>` to remove text with `<substr>` in collection.
 Use `!![<collection>]` to remove `<collection>` (default current) and switch to default.
 Use `picture` to upload a picture.
+Use `~<description>` to search a picture matching <description>.
 
 """
-
 MODEL = "llama3.2-vision:11b"
-# Add image loading capabilities here:
-#   1. ✅ add condition in the loader
-#   2. ✅ put form
-#   3. ✅ load image and parse it with LLM
-#   4. save image description, embeddings etc... in VDB, as well as img address
-#   5. somehow do a RAG to get image out
-#   use existing vision package to take example
+IMAGES = "images"
+IMG_KEY = "img_key"
 
 
 class Vision:
@@ -121,6 +116,22 @@ def loader(args):
             res["form"] = FORM
             out = "Upload a picture. You can later search it by giving a description."
 
+        elif inp.startswith("~"):
+            query = str(inp[1:]).strip()
+            bkt = bucket.Bucket(args)
+
+            collection = IMAGES
+            db.setup(collection)
+            result = db.vector_search(query, 1)[0]
+            metadata = result[-1]
+            img_key = metadata.get("img_key", "")
+            if not img_key:
+                out = "No image found"
+            else:
+                url = bkt.exturl(img_key, 3600)
+                res["html"] = f'<img src="{url}">'
+                out = "Here's an image matching your description"
+
         elif inp != "":
             out = "Inserted "
             lines = [inp]
@@ -144,8 +155,13 @@ def loader(args):
         vis = Vision(args)
         out = vis.decode(img)
 
-        url = bkt.exturl(img_key, 3600)
-        res["html"] = f'<img src="{url}">'
+        collection = IMAGES
+        meta = {IMG_KEY: img_key}
+        db.setup(collection)
+        db.insert(text=out, metadata=meta)
+
+        # url = bkt.exturl(img_key, 3600)
+        # res["html"] = f'<img src="{url}">'
 
     res["output"] = out
     res["state"] = f"{collection}:{limit}"
